@@ -65,9 +65,9 @@ jobs:
           # ======================
           ENABLE_MAIL: true
           ENABLE_FEISHU: false
-          EMAIL_SENDER: "chenzhenyu1314@vip.qq.com"
+          EMAIL_SENDER: "787644105@qq.com"
           EMAIL_PASSWORD: "dhvqxxtigwavbaid"
-          EMAIL_RECEIVERS: "chenzhenyu1314@vip.qq.com"
+          EMAIL_RECEIVERS: "787644105@qq.com"
           SMTP_HOST: "smtp.qq.com"
           SMTP_PORT: "587"
 

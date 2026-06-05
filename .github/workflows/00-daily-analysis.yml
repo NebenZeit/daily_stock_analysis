@@ -63,19 +63,17 @@ jobs:
           # ======================
           # 邮件配置（我帮你加好了）
           # ======================
-          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          EMAIL_RECEIVERS: ${{ secrets.EMAIL_RECEIVERS }}
-          SMTP_HOST: smtp.qq.com
-          SMTP_PORT: 465
+          ENABLE_MAIL: true
+          ENABLE_FEISHU: false
+          EMAIL_SENDER: "chenzhenyu1314@vip.qq.com"
+          EMAIL_PASSWORD: "dhvqxxtigwavbaid"
+          EMAIL_RECEIVERS: "chenzhenyu1314@vip.qq.com"
+          SMTP_HOST: "smtp.qq.com"
+          SMTP_PORT: "465"
 
           # 自选股
           STOCK_LIST: ${{ secrets.STOCK_LIST || '600519' }}
 
-          # 通知开关
-          ENABLE_MAIL: true
-          ENABLE_FEISHU: false
-          ENABLE_WECHAT: false
 
         run: |
           MODE="${{ github.event.inputs.mode || 'full' }}"

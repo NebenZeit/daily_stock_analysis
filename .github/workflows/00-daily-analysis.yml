@@ -69,7 +69,7 @@ jobs:
           EMAIL_PASSWORD: "dhvqxxtigwavbaid"
           EMAIL_RECEIVERS: "chenzhenyu1314@vip.qq.com"
           SMTP_HOST: "smtp.qq.com"
-          SMTP_PORT: "465"
+          SMTP_PORT: "587"
 
           # 自选股
           STOCK_LIST: ${{ secrets.STOCK_LIST || '600519' }}

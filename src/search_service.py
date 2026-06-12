@@ -927,7 +927,9 @@ class BochaSearchProvider(BaseSearchProvider):
                 "query": query,
                 "freshness": freshness,  # 动态时间范围
                 "summary": True,  # 启用AI摘要
-                "count": min(max_results, 50)  # 最大50条
+                "count": min(max_results, 50),  # 最大50条
+                # 排除常见个股行情页，减少「资讯」被股价卡片污染
+                "exclude": SearchService.BOCHA_EXCLUDE_DOMAINS,
             }
             
             # 执行搜索（带瞬时 SSL/网络错误重试）
@@ -2160,6 +2162,38 @@ class SearchService:
         "cninfo", "sse.com", "szse.cn", "hkexnews", "sec.gov", "nasdaq.com",
         "nyse.com", "上交所", "深交所", "港交所", "证券交易所",
     )
+    # 行情页/报价页 URL 特征（博查 exclude + 本地二次过滤）
+    _QUOTE_NOISE_URL_MARKERS = (
+        "quote.eastmoney.com",
+        "stockpage",
+        "vip.stock.finance.sina.com.cn",
+        "finance.sina.com.cn/realstock",
+        "quotes.sina.cn",
+        "stockhtm.finance.qq.com",
+        "q.sohu.com",
+        "stock.sohu.com",
+    )
+    # 行情复述文本特征（需与事件词同时判断，避免误杀含价格的公告）
+    _QUOTE_NOISE_TEXT_MARKERS = (
+        "今日股价", "最新价", "涨跌幅", "个股行情", "股票行情", "行情中心",
+        "市盈率", "市净率", "换手率", "总市值", "流通市值", "k线图", "分时走势",
+        "股票价格_", "_股票行情", "股价查询", "实时行情",
+    )
+    _NEWS_URL_ALLOW_MARKERS = (
+        "cninfo.com.cn",
+        "sse.com.cn",
+        "szse.cn",
+        "eastmoney.com/a/",
+        "finance.sina.com.cn/stock/",
+        "stcn.com",
+        "cs.com.cn",
+        "cls.cn",
+        "yicai.com",
+    )
+    BOCHA_EXCLUDE_DOMAINS = (
+        "quote.eastmoney.com|vip.stock.finance.sina.com.cn|stockhtm.finance.qq.com|q.sohu.com"
+    )
+    _QUOTE_TITLE_PRICE_RE = re.compile(r"[:：]\s*\d+\.\d+")
 
     def __init__(
         self,
@@ -2633,6 +2667,41 @@ class SearchService:
         return any(term.lower() in lower for term in terms)
 
     @classmethod
+    def _is_quote_market_noise(cls, item: SearchResult) -> bool:
+        """判断是否为个股行情/报价页，而非公告、业务或舆论类资讯。"""
+        url = (item.url or "").lower()
+        title = item.title or ""
+        snippet = item.snippet or ""
+        text = f"{title} {snippet}".lower()
+
+        if any(marker in url for marker in cls._NEWS_URL_ALLOW_MARKERS):
+            return False
+
+        if any(marker in url for marker in cls._QUOTE_NOISE_URL_MARKERS):
+            return True
+
+        has_event = cls._contains_any_news_term(
+            f"{title} {snippet} {url}",
+            cls._COMPANY_EVENT_TERMS,
+        )
+        quote_hits = sum(1 for term in cls._QUOTE_NOISE_TEXT_MARKERS if term in text)
+        if quote_hits >= 2 and not has_event:
+            return True
+
+        if ("股票价格" in title or "股票行情" in title or "_行情" in title) and not has_event:
+            return True
+
+        if cls._QUOTE_TITLE_PRICE_RE.search(title) and not has_event:
+            if not any(term in title for term in ("研报", "评级", "目标价", "业绩", "公告", "订单", "合作")):
+                return True
+
+        # 股吧帖：大量行情数字且无事件词时视为低价值噪音
+        if "guba.eastmoney.com" in url and quote_hits >= 1 and not has_event:
+            return True
+
+        return False
+
+    @classmethod
     def _score_news_relevance(
         cls,
         item: SearchResult,
@@ -2772,9 +2841,34 @@ class SearchService:
         if not response.success or not response.results:
             return response
 
+        kept_results: List[SearchResult] = []
+        dropped_quote = 0
+        for item in response.results:
+            if cls._is_quote_market_noise(item):
+                dropped_quote += 1
+                continue
+            kept_results.append(item)
+        if dropped_quote:
+            logger.info(
+                "[新闻过滤] %s: provider=%s, 剔除行情页/报价页 %s 条, 剩余 %s 条",
+                log_scope,
+                response.provider,
+                dropped_quote,
+                len(kept_results),
+            )
+        if not kept_results:
+            return SearchResponse(
+                query=response.query,
+                results=[],
+                provider=response.provider,
+                success=response.success,
+                error_message=response.error_message,
+                search_time=response.search_time,
+            )
+
         scored_results = [
             cls._score_news_relevance(item, stock_code=stock_code, stock_name=stock_name)
-            for item in response.results
+            for item in kept_results
         ]
 
         indexed_results = list(enumerate(scored_results))
@@ -3181,13 +3275,13 @@ class SearchService:
             # 如果提供了关键词，直接使用关键词作为查询
             query = " ".join(focus_keywords)
         elif prefer_chinese:
-            query = f"{stock_name} {stock_code} 股票 最新消息"
+            query = f"{stock_name} {stock_code} 公告 业绩 合作 订单 重大事件"
         elif is_foreign:
             # 港股/美股使用英文搜索关键词
             query = f"{stock_name} {stock_code} stock latest news"
         else:
             # 默认主查询：股票名称 + 核心关键词
-            query = f"{stock_name} {stock_code} 股票 最新消息"
+            query = f"{stock_name} {stock_code} 公告 业绩 合作 订单 重大事件"
 
         logger.info(
             (
@@ -3492,7 +3586,7 @@ class SearchService:
             search_dimensions = [
                 {
                     'name': 'latest_news',
-                    'query': f"{stock_name} {stock_code} 最新 新闻 重大 事件",
+                    'query': f"{stock_name} {stock_code} 最新 公告 新闻 合作 订单 中标",
                     'desc': '最新消息',
                     'tavily_topic': 'news',
                     'strict_freshness': True,

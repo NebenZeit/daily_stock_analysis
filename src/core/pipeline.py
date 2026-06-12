@@ -72,7 +72,7 @@ from src.core.trading_calendar import (
     is_market_open,
 )
 from data_provider.us_index_mapping import is_us_stock_code
-from bot.models import BotMessage
+from src.messaging_models import BotMessage
 
 
 logger = logging.getLogger(__name__)
@@ -447,11 +447,11 @@ class StockAnalysisPipeline:
             if self.search_service is not None and self.search_service.is_available:
                 logger.info(f"{stock_name}({code}) 开始多维度情报搜索...")
 
-                # 使用多维度搜索（最多5次搜索）
+                # 使用多维度搜索（A 股 6 个维度，需 6 次搜索）
                 intel_results = self.search_service.search_comprehensive_intel(
                     stock_code=code,
                     stock_name=stock_name,
-                    max_searches=5
+                    max_searches=6
                 )
 
                 # 格式化情报报告

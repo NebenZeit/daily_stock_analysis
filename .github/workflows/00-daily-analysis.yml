@@ -59,17 +59,15 @@ jobs:
 
           # 数据源
           TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+          ENABLE_CHIP_DISTRIBUTION: ${{ vars.ENABLE_CHIP_DISTRIBUTION || 'true' }}
+          ENABLE_EASTMONEY_PATCH: ${{ vars.ENABLE_EASTMONEY_PATCH || 'true' }}
+          BOCHA_API_KEYS: ${{ secrets.BOCHA_API_KEYS }}
+          SEARXNG_PUBLIC_INSTANCES_ENABLED: ${{ vars.SEARXNG_PUBLIC_INSTANCES_ENABLED || 'false' }}
 
-          # ======================
-          # 邮件配置（我帮你加好了）
-          # ======================
-          ENABLE_MAIL: true
-          ENABLE_FEISHU: false
-          EMAIL_SENDER: "787644105@qq.com"
-          EMAIL_PASSWORD: "dhvqxxtigwavbaid"
-          EMAIL_RECEIVERS: "787644105@qq.com"
-          SMTP_HOST: "smtp.qq.com"
-          SMTP_PORT: "465"
+          # 邮件通知（请在仓库 Settings → Secrets 中配置，勿写入明文）
+          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_RECEIVERS: ${{ secrets.EMAIL_RECEIVERS }}
 
           # 自选股
           STOCK_LIST: ${{ secrets.STOCK_LIST || '600519' }}
@@ -83,11 +81,10 @@ jobs:
           fi
 
           if [ "$MODE" = "market-only" ]; then
-            python main.py --market-review $FORCE_RUN_ARG
-          elif [ "$MODE" = "stocks-only" ]; then
+            echo "market-only 已禁用大盘复盘，改为仅分析自选股"
             python main.py --no-market-review $FORCE_RUN_ARG
           else
-            python main.py $FORCE_RUN_ARG
+            python main.py --no-market-review $FORCE_RUN_ARG
           fi
       
       - name: 上传报告

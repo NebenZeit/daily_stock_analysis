@@ -48,7 +48,7 @@ from src.report_language import (
     localize_trend_prediction,
     normalize_report_language,
 )
-from bot.models import BotMessage
+from src.messaging_models import BotMessage
 from src.utils.sanitize import sanitize_diagnostic_text
 from src.utils.data_processing import normalize_model_used
 from src.notification_sender import (

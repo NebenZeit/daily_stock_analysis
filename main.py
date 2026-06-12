@@ -886,8 +886,7 @@ def main() -> int:
         except Exception as e:
             logger.error(f"启动 FastAPI 服务失败: {e}")
 
-    if bot_clients_started:
-        start_bot_stream_clients(config)
+    # Bot 消息流客户端已移除（仅保留邮件 + Web 分析路径）
 
     # === 仅 Web 服务模式：不自动执行分析 ===
     if args.serve_only:

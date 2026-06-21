@@ -14,6 +14,7 @@ const HomePage = lazy(() => import('./pages/HomePage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const PotentialStockMiningPage = lazy(() => import('./pages/PotentialStockMiningPage'));
 
 const AppContent: React.FC = () => {
   const location = useLocation();
@@ -67,6 +68,7 @@ const AppContent: React.FC = () => {
       >
         <Route path="/" element={<HomePage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/potential-stock-mining" element={<PotentialStockMiningPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

@@ -5,8 +5,6 @@ import { Outlet } from 'react-router-dom';
 import { Drawer } from '../common/Drawer';
 import { SidebarNav } from './SidebarNav';
 import { cn } from '../../utils/cn';
-import { ThemeToggle } from '../theme/ThemeToggle';
-
 type ShellProps = {
   children?: React.ReactNode;
 };
@@ -43,9 +41,6 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="pointer-events-auto">
-          <ThemeToggle />
-        </div>
       </div>
 
       <div className="mx-auto flex min-h-screen w-full max-w-[1680px] px-3 py-3 sm:px-4 sm:py-4 lg:px-5">

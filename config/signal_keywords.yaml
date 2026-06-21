@@ -1,0 +1,77 @@
+# 信号关键词配置
+# 用于公告标题关键词匹配的事件分类和优先级映射
+
+# 事件类型与关键词
+event_types:
+  M_A:                                    # 并购重组 (P0)
+    priority: P0
+    include_keywords:
+      - 收购
+      - 并购
+      - 重组
+      - 借壳
+      - 吸收合并
+      - 重大资产重组
+    exclude_keywords:
+      - 出售
+      - 转让
+      - 减持
+    min_title_length: 4
+
+  CAP_EXPAND:                            # 产能扩张 (P0)
+    priority: P0
+    include_keywords:
+      - 投资建设
+      - 扩产
+      - 新建项目
+      - 产能扩建
+      - 生产基地
+      - 投产
+      - 产线建设
+    exclude_keywords: []
+    min_title_length: 4
+
+  BIZ_CHANGE:                            # 业务变更/跨界 (P1)
+    priority: P1
+    include_keywords:
+      - 经营范围变更
+      - 新增业务
+      - 跨界
+      - 转型
+      - 进军
+      - 布局
+      - 战略转型
+      - 业务拓展
+    exclude_keywords:
+      - 注销
+      - 减少
+    min_title_length: 4
+
+  TECH_COOP:                             # 技术合作 (P1)
+    priority: P1
+    include_keywords:
+      - 战略合作
+      - 签订协议
+      - 联合研发
+      - 技术许可
+      - 合作协议
+      - 研发合作
+      - 技术合作
+    exclude_keywords:
+      - 终止
+      - 解除
+    min_title_length: 4
+
+  ORDER:                                 # 订单落地 (P2)
+    priority: P2
+    include_keywords:
+      - 重大合同
+      - 中标
+      - 订单
+      - 框架协议
+      - 供货合同
+      - 销售合同
+    exclude_keywords:
+      - 解除
+      - 取消
+    min_title_length: 4

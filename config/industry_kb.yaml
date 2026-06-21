@@ -1,0 +1,85 @@
+# 产业知识库配置
+# 定义赛道信息，用于产业增量价值评估
+
+sectors:
+  ai_computing_upstream:
+    sector_name: "AI 算力上游材料"
+    description: "AI 算力产业链上游环节，包括芯片、存储器、光模块、PCB、散热等核心零部件和材料"
+    keywords:
+      - 算力
+      - GPU
+      - AI芯片
+      - HBM
+      - 光模块
+      - 服务器
+      - 液冷
+      - PCB
+      - 存储芯片
+      - 先进封装
+      - CoWoS
+      - 高频高速
+      - 算力基础设施
+    products:
+      - AI服务器
+      - 高速光模块
+      - HBM内存
+      - AI芯片
+      - 液冷散热系统
+      - 高频PCB
+    related_industries:
+      - 电子
+      - 计算机
+      - 通信
+      - 半导体
+    tech_route: "当前以 GPU 集群为核心，HBM 显存和高速互联（光模块/铜缆）为关键配套，液冷散热逐步成为数据中心标配"
+    company_mappings: []
+
+  ai_healthcare:
+    sector_name: "AI+医疗"
+    description: "人工智能在医疗健康领域的应用，涵盖辅助诊断、医学影像分析、智慧医疗等方向"
+    keywords:
+      - AI诊断
+      - 医学影像
+      - 智慧医疗
+      - 医疗AI
+      - 基因测序
+      - 辅助诊断
+      - 医疗大数据
+      - AI辅助诊断
+      - 智能医疗
+    products:
+      - AI辅助诊断系统
+      - 智能影像分析平台
+      - 医疗大数据平台
+      - 基因测序分析
+    related_industries:
+      - 医药生物
+      - 计算机
+      - 医疗器械
+    tech_route: "深度学习在医学影像识别领域已较成熟，大语言模型正在赋能问诊和病历分析，多模态AI是下一个突破方向"
+    company_mappings: []
+
+  ai_drug_discovery:
+    sector_name: "AI+药物研发"
+    description: "AI 技术在药物发现和临床试验中的应用，包括分子筛选、药物设计、临床试验预测等"
+    keywords:
+      - AI制药
+      - 药物研发
+      - 分子筛选
+      - 临床试验AI
+      - 计算机辅助药物设计
+      - AI药物发现
+      - 靶点发现
+      - 药物分子
+      - AI辅助研发
+    products:
+      - AI药物发现平台
+      - 分子模拟软件
+      - 临床试验预测系统
+      - 靶点发现平台
+    related_industries:
+      - 医药生物
+      - 计算机
+      - 基础化工
+    tech_route: "AI 在靶点发现和先导化合物优化阶段已开始落地，AlphaFold 等蛋白质结构预测加速了结构药物设计"
+    company_mappings: []

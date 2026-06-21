@@ -8,7 +8,6 @@ import { ApiErrorAlert, Button, ConfirmDialog, EmptyState } from '../components/
 import {
   AuthSettingsCard,
   ChangePasswordCard,
-  IntelligentImport,
   LLMChannelEditor,
   NotificationTestPanel,
   SettingsCategoryNav,
@@ -358,6 +357,45 @@ const SettingsPage: React.FC = () => {
   const DATA_SOURCE_HIDDEN_KEYS = new Set([
     'ALPHASIFT_ENABLED',
   ]);
+  // Only email notification channel fields are kept; all other channel-specific
+  // keys (WeChat, Feishu, Telegram, Discord, Slack, PushPlus, Pushover, etc.)
+  // are hidden to simplify the UI — email is the sole notification channel.
+  const NOTIFICATION_REMOVED_KEYS = new Set([
+    'WECHAT_WEBHOOK_URL',
+    'FEISHU_WEBHOOK_URL',
+    'FEISHU_WEBHOOK_SECRET',
+    'FEISHU_WEBHOOK_KEYWORD',
+    'FEISHU_APP_ID',
+    'FEISHU_APP_SECRET',
+    'FEISHU_STREAM_ENABLED',
+    'DINGTALK_APP_KEY',
+    'DINGTALK_APP_SECRET',
+    'DINGTALK_STREAM_ENABLED',
+    'TELEGRAM_BOT_TOKEN',
+    'TELEGRAM_CHAT_ID',
+    'TELEGRAM_MESSAGE_THREAD_ID',
+    'DISCORD_WEBHOOK_URL',
+    'DISCORD_BOT_TOKEN',
+    'DISCORD_MAIN_CHANNEL_ID',
+    'DISCORD_INTERACTIONS_PUBLIC_KEY',
+    'SLACK_BOT_TOKEN',
+    'SLACK_CHANNEL_ID',
+    'SLACK_WEBHOOK_URL',
+    'PUSHPLUS_TOPIC',
+    'PUSHPLUS_TOKEN',
+    'PUSHOVER_USER_KEY',
+    'PUSHOVER_API_TOKEN',
+    'SERVERCHAN3_SENDKEY',
+    'ASTRBOT_URL',
+    'ASTRBOT_TOKEN',
+    'CUSTOM_WEBHOOK_URLS',
+    'CUSTOM_WEBHOOK_BEARER_TOKEN',
+    'CUSTOM_WEBHOOK_BODY_TEMPLATE',
+    'NTFY_URL',
+    'NTFY_TOKEN',
+    'GOTIFY_URL',
+    'GOTIFY_TOKEN',
+  ]);
   const AGENT_HIDDEN_KEYS = new Set<string>();
   const activeItems =
     activeCategory === 'ai_model'
@@ -374,6 +412,8 @@ const SettingsPage: React.FC = () => {
         ? rawActiveItems.filter((item) => !SYSTEM_HIDDEN_KEYS.has(item.key))
       : activeCategory === 'data_source'
         ? rawActiveItems.filter((item) => !DATA_SOURCE_HIDDEN_KEYS.has(item.key))
+      : activeCategory === 'notification'
+        ? rawActiveItems.filter((item) => !NOTIFICATION_REMOVED_KEYS.has(item.key))
       : activeCategory === 'agent'
         ? rawActiveItems.filter((item) => !AGENT_HIDDEN_KEYS.has(item.key))
       : rawActiveItems;
@@ -612,7 +652,7 @@ const SettingsPage: React.FC = () => {
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-foreground">系统设置</h1>
             <p className="text-xs leading-6 text-muted-text">
-              统一管理模型、数据源、通知、安全认证与导入能力。
+              统一管理模型、数据源、邮件通知与安全认证。
             </p>
           </div>
 
@@ -663,7 +703,7 @@ const SettingsPage: React.FC = () => {
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
           <aside className="lg:sticky lg:top-4 lg:self-start">
             <SettingsCategoryNav
-              categories={categories}
+              categories={categories.filter((c) => c.category !== 'backtest')}
               itemsByCategory={itemsByCategory}
               activeCategory={activeCategory}
               onSelect={setActiveCategory}
@@ -877,24 +917,6 @@ const SettingsPage: React.FC = () => {
                     <SettingsAlert title="操作成功" message={envBackupActionSuccess} variant="success" />
                   ) : null}
                 </div>
-              </SettingsSectionCard>
-            ) : null}
-            {activeCategory === 'base' ? (
-              <SettingsSectionCard
-                title="智能导入"
-                description="从图片、文件或剪贴板中提取股票代码，并合并到自选股列表。"
-              >
-                <IntelligentImport
-                  stockListValue={
-                    (activeItems.find((i) => i.key === 'STOCK_LIST')?.value as string) ?? ''
-                  }
-                  configVersion={configVersion}
-                  maskToken={maskToken}
-                  onMerged={async () => {
-                    await refreshAfterExternalSave(['STOCK_LIST']);
-                  }}
-                  disabled={isSaving || isLoading}
-                />
               </SettingsSectionCard>
             ) : null}
             {activeCategory === 'ai_model' ? (

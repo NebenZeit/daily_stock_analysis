@@ -12,19 +12,7 @@ import { ApiErrorAlert, Badge, Button, InlineAlert, Input, Select } from '../com
 import { SettingsSectionCard } from './SettingsSectionCard';
 
 const CHANNEL_OPTIONS: Array<{ value: NotificationTestChannel; label: string }> = [
-  { value: 'wechat', label: '企业微信' },
-  { value: 'feishu', label: '飞书 Webhook' },
-  { value: 'telegram', label: 'Telegram' },
   { value: 'email', label: '邮件' },
-  { value: 'pushover', label: 'Pushover' },
-  { value: 'ntfy', label: 'ntfy' },
-  { value: 'gotify', label: 'Gotify' },
-  { value: 'pushplus', label: 'PushPlus' },
-  { value: 'serverchan3', label: 'Server酱3' },
-  { value: 'custom', label: '自定义 Webhook' },
-  { value: 'discord', label: 'Discord' },
-  { value: 'slack', label: 'Slack' },
-  { value: 'astrbot', label: 'AstrBot' },
 ];
 
 interface NotificationTestPanelProps {
@@ -44,7 +32,7 @@ export const NotificationTestPanel: React.FC<NotificationTestPanelProps> = ({
   maskToken,
   disabled = false,
 }) => {
-  const [channel, setChannel] = useState<NotificationTestChannel>('wechat');
+  const [channel, setChannel] = useState<NotificationTestChannel>('email');
   const [title, setTitle] = useState('DSA 通知测试');
   const [content, setContent] = useState('这是一条来自 DSA Web 设置页的通知测试消息。');
   const [timeoutSeconds, setTimeoutSeconds] = useState('20');

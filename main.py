@@ -256,6 +256,9 @@ def parse_arguments() -> argparse.Namespace:
   python main.py --single-notify    # 启用单股推送模式（每分析完一只立即推送）
   python main.py --schedule         # 启用定时任务模式
   python main.py --market-review    # 仅运行大盘复盘
+  python main.py --potential-stock-mining  # 运行潜力标的挖掘
+  python main.py --potential-stock-mining --since 2026-06-01 --until 2026-06-20  # 指定时间范围
+  python main.py --potential-stock-mining --board-type all                        # 全市场（含创业板科创板）
         '''
     )
 
@@ -401,6 +404,38 @@ def parse_arguments() -> argparse.Namespace:
         '--backtest-force',
         action='store_true',
         help='强制回测（即使已有回测结果也重新计算）'
+    )
+
+    # === 潜力标的挖掘 ===
+    parser.add_argument(
+        '--potential-stock-mining',
+        action='store_true',
+        help='运行潜力标的挖掘（扫描公告+筛选标的）'
+    )
+    parser.add_argument(
+        '--since',
+        type=str,
+        default=None,
+        help='扫描起始日期（YYYY-MM-DD），与 --potential-stock-mining 配合使用'
+    )
+    parser.add_argument(
+        '--until',
+        type=str,
+        default=None,
+        help='扫描截止日期（YYYY-MM-DD），与 --potential-stock-mining 配合使用'
+    )
+    parser.add_argument(
+        '--sector',
+        type=str,
+        default=None,
+        help='赛道过滤，与 --potential-stock-mining 配合使用'
+    )
+    parser.add_argument(
+        '--board-type',
+        type=str,
+        default='main_board',
+        choices=['main_board', 'all'],
+        help='板块过滤：main_board（仅主板A股，默认）/ all（全市场含创业板科创板），与 --potential-stock-mining 配合使用'
     )
 
     return parser.parse_args()
@@ -903,6 +938,31 @@ def main() -> int:
         return 0
 
     try:
+        # 模式4: 潜力标的挖掘 (优先于其他模式)
+        if getattr(args, 'potential_stock_mining', False):
+            logger.info("模式: 潜力标的挖掘")
+            from src.potential_stock_mining import run_potential_stock_mining
+            from src.potential_stock_mining.models import TRIGGER_MANUAL
+
+            # 并发检查：已有运行中的任务则拒绝
+            from src.potential_stock_mining.file_store import MiningFileStore
+            _fs = MiningFileStore()
+            _running_id = _fs.has_running_task()
+            if _running_id:
+                logger.error("已有扫描任务正在执行中（任务 ID: %s），请等待完成后再试", _running_id)
+                print(f"❌ 已有扫描任务正在执行中（任务 ID: {_running_id}），请等待完成后再试")
+                return 1
+
+            run_potential_stock_mining(
+                since=getattr(args, 'since', None),
+                until=getattr(args, 'until', None),
+                trigger_type=TRIGGER_MANUAL,
+                target_stocks=stock_codes,
+                sector_filter=getattr(args, 'sector', None),
+                board_type=getattr(args, 'board_type', 'main_board'),
+            )
+            return 0
+
         # 模式0: 回测
         if getattr(args, 'backtest', False):
             logger.info("模式: 回测")
@@ -994,6 +1054,40 @@ def main() -> int:
                     "interval_seconds": interval_minutes * 60,
                     "run_immediately": True,
                     "name": "agent_event_monitor",
+                })
+
+            # 潜力标的挖掘定时任务
+            if getattr(config, 'potential_stock_enabled', False):
+                from src.potential_stock_mining import run_potential_stock_mining
+                from src.potential_stock_mining.models import TRIGGER_SCHEDULED
+
+                _ps_schedule_time = config.potential_stock_schedule_time
+                _ps_interval = config.potential_stock_incremental_interval
+
+                logger.info(
+                    "[潜力标的] 定时扫描已启用，每日 %s 执行，增量轮询每 %d 分钟",
+                    _ps_schedule_time, _ps_interval,
+                )
+
+                def daily_potential_stock_scan():
+                    """每日盘后扫描"""
+                    from src.potential_stock_mining.file_store import MiningFileStore
+                    _ps_fs = MiningFileStore()
+                    _ps_running = _ps_fs.has_running_task()
+                    if _ps_running:
+                        logger.warning("[潜力标的] 上次扫描仍在运行，跳过本次")
+                        return
+                    from src.potential_stock_mining import BOARD_MAIN
+                    run_potential_stock_mining(
+                        trigger_type=TRIGGER_SCHEDULED,
+                        board_type=BOARD_MAIN,
+                    )
+
+                background_tasks.append({
+                    "task": daily_potential_stock_scan,
+                    "interval_seconds": _ps_interval * 60,
+                    "run_immediately": False,
+                    "name": "potential_stock_mining",
                 })
 
             run_with_schedule(

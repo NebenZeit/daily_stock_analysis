@@ -896,6 +896,15 @@ class Config:
     schedule_time: str = "18:00"              # 每日推送时间（HH:MM 格式）
     schedule_run_immediately: bool = True     # 启动时是否立即执行一次
     run_immediately: bool = True              # 启动时是否立即执行一次（非定时模式）
+
+    # === 潜力标的挖掘配置 ===
+    potential_stock_enabled: bool = False                     # 是否启用自动扫描
+    potential_stock_schedule_time: str = "18:00"              # 定时扫描时间
+    potential_stock_incremental_interval: int = 15            # 增量轮询间隔(分钟)
+    potential_stock_notify_enabled: bool = False              # 是否推送筛选结果
+    cninfo_request_timeout: int = 15                          # cninfo API 超时(秒)
+    cninfo_max_retries: int = 3                               # cninfo 重试次数
+    cninfo_page_size: int = 50                                # cninfo 每页公告数
     market_review_enabled: bool = True        # 是否启用大盘复盘
     # 大盘复盘市场区域：cn(A股)、hk(港股)、us(美股)、both(三市场)，us 适合仅关注美股的用户
     market_review_region: str = "cn"
@@ -1700,6 +1709,26 @@ class Config:
             schedule_time=(schedule_time_value or '18:00').strip() or '18:00',
             schedule_run_immediately=schedule_run_immediately,
             run_immediately=legacy_run_immediately,
+            # --- 潜力标的挖掘 ---
+            potential_stock_enabled=os.getenv('POTENTIAL_STOCK_ENABLED', 'false').lower() == 'true',
+            potential_stock_schedule_time=os.getenv('POTENTIAL_STOCK_SCHEDULE_TIME', '18:00').strip() or '18:00',
+            potential_stock_incremental_interval=parse_env_int(
+                os.getenv('POTENTIAL_STOCK_INCREMENTAL_INTERVAL'), 15,
+                field_name='POTENTIAL_STOCK_INCREMENTAL_INTERVAL', minimum=1
+            ),
+            potential_stock_notify_enabled=os.getenv('POTENTIAL_STOCK_NOTIFY_ENABLED', 'false').lower() == 'true',
+            cninfo_request_timeout=parse_env_int(
+                os.getenv('CNINFO_REQUEST_TIMEOUT'), 15,
+                field_name='CNINFO_REQUEST_TIMEOUT', minimum=1
+            ),
+            cninfo_max_retries=parse_env_int(
+                os.getenv('CNINFO_MAX_RETRIES'), 3,
+                field_name='CNINFO_MAX_RETRIES', minimum=0
+            ),
+            cninfo_page_size=parse_env_int(
+                os.getenv('CNINFO_PAGE_SIZE'), 50,
+                field_name='CNINFO_PAGE_SIZE', minimum=1, maximum=100
+            ),
             market_review_enabled=os.getenv('MARKET_REVIEW_ENABLED', 'true').lower() == 'true',
             market_review_region=cls._parse_market_review_region(
                 os.getenv('MARKET_REVIEW_REGION', 'cn')

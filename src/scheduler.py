@@ -101,7 +101,16 @@ class Scheduler:
         if not self._configure_daily_task(self.schedule_time):
             raise ValueError(f"无效的定时执行时间: {self.schedule_time!r}")
 
-        if run_immediately:
+        if self._is_today_time_passed(self.schedule_time):
+            # 今日定时时间已过，schedule 库会把任务推到明天。
+            # 此时即使 run_immediately=False，也应立即执行一次，
+            # 因为"每日分析"的语义包含"今天还没跑过就补跑"。
+            logger.warning(
+                "定时执行时间 %s 已过今日，将立即执行本次任务。",
+                self.schedule_time,
+            )
+            self._safe_run_task()
+        elif run_immediately:
             logger.info("立即执行一次任务...")
             self._safe_run_task()
 
@@ -112,6 +121,20 @@ class Scheduler:
         if not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", candidate):
             return False
         return True
+
+    @staticmethod
+    def _is_today_time_passed(schedule_time: str) -> bool:
+        """Check whether the given HH:MM has already passed today."""
+        try:
+            now = datetime.now()
+            today_target = datetime(
+                now.year, now.month, now.day,
+                hour=int(schedule_time[:2]),
+                minute=int(schedule_time[3:5]),
+            )
+            return now > today_target
+        except (ValueError, IndexError):
+            return False
 
     def _cancel_daily_job(self) -> None:
         """Remove the currently registered daily job if one exists."""

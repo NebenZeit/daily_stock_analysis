@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { BarChart3, Home, LogOut, Settings2 } from 'lucide-react';
+import { BarChart3, Home, LogOut, Search, Settings2 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../utils/cn';
 import { ConfirmDialog } from '../common/ConfirmDialog';
-import { ThemeToggle } from '../theme/ThemeToggle';
 
 type SidebarNavProps = {
   collapsed?: boolean;
@@ -22,6 +21,7 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { key: 'home', label: '首页', to: '/', icon: Home, exact: true },
+  { key: 'potential-stock', label: '潜力标的', to: '/potential-stock-mining', icon: Search },
   { key: 'settings', label: '设置', to: '/settings', icon: Settings2 },
 ];
 
@@ -92,15 +92,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ collapsed = false, onNav
           </NavLink>
         ))}
 
-        <ThemeToggle
-          variant={isRail ? 'rail' : 'nav'}
-          collapsed={collapsed}
-          wrapperClassName="w-full"
-          triggerClassName={itemInteractiveClass}
-          triggerActiveClassName={itemActiveClass}
-          iconClassName={itemIconClass}
-          labelClassName={itemLabelClass}
-        />
       </nav>
 
       {authEnabled ? (

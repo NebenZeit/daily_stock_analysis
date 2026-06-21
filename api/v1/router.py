@@ -11,7 +11,7 @@ API v1 路由聚合
 
 from fastapi import APIRouter
 
-from api.v1.endpoints import analysis, auth, history, stocks, system_config, agent, health
+from api.v1.endpoints import analysis, auth, history, stocks, system_config, agent, health, potential_stock, alphasift
 
 # 创建 v1 版本主路由
 router = APIRouter(prefix="/api/v1")
@@ -55,4 +55,16 @@ router.include_router(
 router.include_router(
     health.router,
     tags=["Health"]
+)
+
+router.include_router(
+    potential_stock.router,
+    prefix="/potential-stock",
+    tags=["PotentialStock"]
+)
+
+router.include_router(
+    alphasift.router,
+    prefix="/alphasift",
+    tags=["AlphaSift"]
 )

@@ -7,6 +7,7 @@ const categoryTitleMap: Record<SystemConfigCategory, string> = {
   notification: '通知渠道',
   system: '系统设置',
   agent: 'Agent 设置',
+  backtest: '回测设置',
   uncategorized: '其他',
 };
 

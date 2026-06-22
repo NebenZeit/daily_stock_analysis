@@ -191,7 +191,6 @@ const TaskDetailModal: React.FC<{
   onClose: () => void;
 }> = ({ taskDetail, announcements, onClose }) => {
   const matchedAnnouncements = announcements.filter(a => a.status === 'SIGNAL_MATCHED');
-  const unmatchedAnnouncements = announcements.filter(a => a.status !== 'SIGNAL_MATCHED');
 
   const boardType = taskDetail.taskMeta?.board_type || 'main_board';
   const boardLabel = boardType === 'all' ? '全市场（含创业板/科创板）' : '仅主板A股';

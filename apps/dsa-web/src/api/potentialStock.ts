@@ -53,7 +53,7 @@ export type ScanTaskInfo = {
   announcementsFetched: number;
   signalsMatched: number;
   resultsProduced: number;
-  taskMeta?: { announcements?: AnnouncementInfo[] } | null;
+  taskMeta?: { announcements?: AnnouncementInfo[]; board_type?: string } | null;
 };
 
 export type TrackedTarget = {
@@ -101,7 +101,7 @@ export type ScanTaskDetail = {
   signalsMatched: number;
   resultsProduced: number;
   errorLog: string | null;
-  taskMeta?: { announcements?: AnnouncementInfo[] } | null;
+  taskMeta?: { announcements?: AnnouncementInfo[]; board_type?: string } | null;
 };
 
 export type ScanRequest = {
